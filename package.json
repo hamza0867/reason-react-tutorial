@@ -14,13 +14,14 @@
     "tailwindcss": "^1.4.6"
   },
   "devDependencies": {
-    "bs-platform": "^7.3.2",
-    "reason-react": "^0.8.0",
-    "vite": "^0.20.0",
-    "vite-plugin-react": "^2.0.0",
+    "@yawaramin/prometo": "^0.10.0",
     "bs-bastet": "^1.2.5",
-    "bs-decode": "^0.11.1",
+    "bs-decode": "^0.11.2",
     "bs-fetch": "^0.5.2",
-    "relude": "^0.63.1"
+    "bs-platform": "^8.0.2",
+    "reason-react": "^0.8.0",
+    "relude": "^0.63.1",
+    "vite": "^0.20.0",
+    "vite-plugin-react": "^2.0.0"
   }
 }

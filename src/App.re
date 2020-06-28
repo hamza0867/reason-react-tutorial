@@ -11,21 +11,20 @@ module Header = {
 type todo = {
   id: int,
   title: string,
-  subtitle: option(string),
   completed: bool,
 };
 
 let todos = [
-  {id: 1, title: "Learn React", completed: true, subtitle: Some("subtitle")},
-  {id: 2, title: "Learn ReaonML", completed: false, subtitle: None},
-  {id: 3, title: "Have fun", completed: false, subtitle: None},
+  {id: 1, title: "Learn React", completed: true},
+  {id: 2, title: "Learn ReaonML", completed: false},
+  {id: 3, title: "Have fun", completed: false},
 ];
 
 type state = {todos: list(todo)};
 
 type action =
   | ToggleComplete(int)
-  | Reset;
+  | Reset(list(todo));
 
 let reducer = (state, action) =>
   switch (action) {
@@ -40,7 +39,7 @@ let reducer = (state, action) =>
             }
           ),
     }
-  | Reset => {todos: todos}
+  | Reset(todos) => {todos: todos}
   };
 
 module Todo = {
@@ -53,14 +52,7 @@ module Todo = {
         checked={todo.completed}
         onChange={_ => dispatch(ToggleComplete(todo.id))}
       />
-      <span>
-        {React.string(todo.title)}
-        {switch (todo.subtitle) {
-         | Some(subtitle) =>
-           <span className="ml-4 text-base"> {React.string(subtitle)} </span>
-         | None => React.null
-         }}
-      </span>
+      <span> {React.string(todo.title)} </span>
     </div>;
   };
 };
@@ -70,6 +62,9 @@ let make = () => {
   let ({todos}, dispatch) = React.useReducer(reducer, {todos: todos});
   <div className="p-4">
     <Header />
-    {todos->List.map(todo => <Todo todo dispatch />)->List.toArray->React.array}
+    {todos
+     ->List.map(todo => <Todo todo dispatch key={todo.id->string_of_int} />)
+     ->List.toArray
+     ->React.array}
   </div>;
 };
