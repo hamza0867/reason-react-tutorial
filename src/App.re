@@ -18,6 +18,19 @@ type todo = {
   completed: bool,
 };
 
+let make = (id, title, completed) => {id, title, completed};
+
+let decode = json =>
+  Decode.(
+    succeed(make)
+    |> field("id", intFromNumber)
+    |> field("title", string)
+    |> field("completed", boolean)
+    |> run(json)
+  );
+
+let decodeTodos = Decode.list(decode);
+
 let todos = [
   {id: 1, title: "Learn React", completed: true},
   {id: 2, title: "Learn ReaonML", completed: false},
@@ -64,6 +77,30 @@ module Todo = {
 [@react.component]
 let make = () => {
   let ({todos}, dispatch) = React.useReducer(reducer, {todos: todos});
+
+  React.useEffect0(() => {
+    let todosPromise =
+      Fetch.fetch("http://localhost:8080/todos")->Prometo.fromPromise;
+    todosPromise
+    ->Prometo.thenPromise(~f=res => Fetch.Response.json(res))
+    ->Prometo.forEach(~f=data => {
+        Js.log(data);
+        let maybeTodos = decodeTodos(data);
+        switch (maybeTodos) {
+        | Ok(todos) => dispatch(Reset(todos))
+        | Error(e) => Js.Console.error(ParseError.failureToDebugString(e))
+        };
+      });
+
+    // // input => promise(output) : thenPromise
+    // fetch("remoteUrl").then(res => res.json())
+    // // input => output : map
+    // .then( int => int.toString() )
+    // // input => () : forEach
+    // .then( data => setState(data) )
+
+    Some(() => Prometo.cancel(todosPromise));
+  });
 
   <div className="p-4">
     <Header />
