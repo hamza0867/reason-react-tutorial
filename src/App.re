@@ -4,10 +4,24 @@ module Decode = Decode.AsResult.OfParseError.Pipeline;
 
 module Header = {
   [@react.component]
-  let make = () => {
+  let make = (~path: list(string)) => {
     <div
-      className="flex justify-center p-4 text-5xl text-white bg-gray-900 rounded">
-      {React.string(" Todo List")}
+      className="flex flex-col items-center p-4 text-5xl text-white bg-gray-900 rounded">
+      <div> {React.string(" Todo List")} </div>
+      <div className="text-base">
+        <span
+          className={"cursor-pointer mr-2" ++ (path == [] ? " underline" : "")}
+          onClick={_ => ReasonReactRouter.push("/")}>
+          {React.string("Home")}
+        </span>
+        <span
+          className={
+            "cursor-pointer ml-2" ++ (path == ["about"] ? " underline" : "")
+          }
+          onClick={_ => ReasonReactRouter.push("/about")}>
+          {React.string("About")}
+        </span>
+      </div>
     </div>;
   };
 };
@@ -74,9 +88,20 @@ module Todo = {
   };
 };
 
+module BlueDiv = {
+  [@bs.module "./JsComponent"] [@react.component]
+  external make: (~children: React.element) => React.element = "BlueDiv";
+};
+
+[@bs.module "./JsComponent"] external add: (int, int) => int = "add";
+
 [@react.component]
 let make = () => {
   let ({todos}, dispatch) = React.useReducer(reducer, {todos: todos});
+
+  let x = add(2, 3);
+
+  Js.log(x);
 
   React.useEffect0(() => {
     let todosPromise =
@@ -102,11 +127,19 @@ let make = () => {
     Some(() => Prometo.cancel(todosPromise));
   });
 
+  let url = ReasonReactRouter.useUrl();
+
   <div className="p-4">
-    <Header />
-    {todos
-     ->List.map(todo => <Todo todo dispatch key={todo.id->string_of_int} />)
-     ->List.toArray
-     ->React.array}
+    <Header path={url.path} />
+    {switch (url.path) {
+     | [] =>
+       todos
+       ->List.map(todo => <Todo todo dispatch key={todo.id->string_of_int} />)
+       ->List.toArray
+       ->React.array
+     | ["about"] =>
+       <BlueDiv> {React.string("This is the about page")} </BlueDiv>
+     | _ => React.string("Not found")
+     }}
   </div>;
 };
